@@ -17,8 +17,6 @@
 #include <stdio.h>
 #include <string>
 
-#define N 1
-
 class CL
 {
     private:

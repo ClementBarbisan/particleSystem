@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2E41E03D1CF30831002C4891 /* Renderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2E41E03B1CF30831002C4891 /* Renderer.cpp */; };
+		2E41E0411CF30F90002C4891 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2E41E03F1CF30F90002C4891 /* utils.cpp */; };
 		2E4A93BA1CEB05A3005F15CE /* CL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A93B81CEB05A3005F15CE /* CL.cpp */; };
 		2E5305C91CE5DAFC00112140 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2E5305C81CE5DAFC00112140 /* main.cpp */; };
 /* End PBXBuildFile section */
@@ -24,6 +26,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2E41E03A1CF2FC0F002C4891 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		2E41E03B1CF30831002C4891 /* Renderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Renderer.cpp; sourceTree = "<group>"; };
+		2E41E03C1CF30831002C4891 /* Renderer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Renderer.hpp; sourceTree = "<group>"; };
+		2E41E03E1CF30D04002C4891 /* Particle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Particle.h; sourceTree = "<group>"; };
+		2E41E03F1CF30F90002C4891 /* utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utils.cpp; sourceTree = "<group>"; };
+		2E41E0401CF30F90002C4891 /* utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = utils.hpp; sourceTree = "<group>"; };
 		2E4A93B81CEB05A3005F15CE /* CL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CL.cpp; sourceTree = "<group>"; };
 		2E4A93B91CEB05A3005F15CE /* CL.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CL.hpp; sourceTree = "<group>"; };
 		2E5305C51CE5DAFC00112140 /* particleSystem */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = particleSystem; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -63,6 +71,12 @@
 				2E5305C81CE5DAFC00112140 /* main.cpp */,
 				2E4A93B81CEB05A3005F15CE /* CL.cpp */,
 				2E4A93B91CEB05A3005F15CE /* CL.hpp */,
+				2E41E03A1CF2FC0F002C4891 /* main.h */,
+				2E41E03B1CF30831002C4891 /* Renderer.cpp */,
+				2E41E03C1CF30831002C4891 /* Renderer.hpp */,
+				2E41E03E1CF30D04002C4891 /* Particle.h */,
+				2E41E03F1CF30F90002C4891 /* utils.cpp */,
+				2E41E0401CF30F90002C4891 /* utils.hpp */,
 			);
 			path = particleSystem;
 			sourceTree = "<group>";
@@ -123,8 +137,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2E41E03D1CF30831002C4891 /* Renderer.cpp in Sources */,
 				2E4A93BA1CEB05A3005F15CE /* CL.cpp in Sources */,
 				2E5305C91CE5DAFC00112140 /* main.cpp in Sources */,
+				2E41E0411CF30F90002C4891 /* utils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +231,19 @@
 		2E5305CD1CE5DAFC00112140 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEPLOYMENT_LOCATION = NO;
+				HEADER_SEARCH_PATHS = "${HOME}/.brew/include/";
+				LIBRARY_SEARCH_PATHS = "${HOME}/.brew/lib/";
+				OTHER_LDFLAGS = (
+					"-framework",
+					OpenGL,
+					"-framework",
+					OpenCL,
+					"-framework",
+					AppKit,
+					"-L${HOME}/.brew/lib/",
+					"-lglfw3",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -222,6 +251,19 @@
 		2E5305CE1CE5DAFC00112140 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEPLOYMENT_LOCATION = NO;
+				HEADER_SEARCH_PATHS = "${HOME}/.brew/include/";
+				LIBRARY_SEARCH_PATHS = "${HOME}/.brew/lib/";
+				OTHER_LDFLAGS = (
+					"-framework",
+					OpenGL,
+					"-framework",
+					OpenCL,
+					"-framework",
+					AppKit,
+					"-L${HOME}/.brew/lib/",
+					"-lglfw3",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
