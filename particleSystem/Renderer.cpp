@@ -12,6 +12,35 @@
 #include <cmath>
 #include <iostream>
 
+void    Renderer::cubeShape()
+{
+    Particle *particles = (Particle *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    for (int i; i < nbParticles; i++)
+    {
+        float rand1 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        particles->x = rand1 >= 0.66 ? (rand() % 2) > 0 ? 0.5 : -0.5 : -0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        particles->y = rand1 < 0.66 && rand1 >= 0.33 ? (rand() % 2) > 0 ? 0.5 : -0.5 : -0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        particles->z = rand1 < 0.33 ? (rand() % 2) > 0 ? 0.0 : -1.0 : -1.0 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        particles++;
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+void    Renderer::sphereShape()
+{
+    Particle *particles = (Particle *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    for (int i; i < nbParticles; i++)
+    {
+        float rand1 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 180);
+        float rand2 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 360);
+        particles->x = sin(rand1) * cos(rand2);
+        particles->y = sin(rand1) * sin(rand2);
+        particles->z = cos(rand1);
+        particles++;
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
 void    Renderer::createParticles(int nb)
 {
     int floatByteSize = 4;
@@ -25,16 +54,8 @@ void    Renderer::createParticles(int nb)
     glGenBuffers(1, &vboId);
     glBindVertexArray(vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    glBufferData(GL_ARRAY_BUFFER, nb * sizeof(Particle), NULL, GL_STATIC_DRAW);
-    Particle *particles = (Particle *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    for (int i; i < nb; i++)
-    {
-        particles->x = 0.5;
-        particles->y = 0.5;
-        particles->z = -1.0;
-        particles++;
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBufferData(GL_ARRAY_BUFFER, nb * sizeof(Particle), NULL, GL_DYNAMIC_DRAW);
+    cubeShape();
     glVertexAttribPointer(0, positionFloatCount, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -128,5 +149,5 @@ Renderer::Renderer(int particlesNb, int width, int height)
 
 Renderer::Renderer()
 {
-    init(10000, 800, 600);
+    init(1000000, 800, 600);
 }

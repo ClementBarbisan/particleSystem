@@ -30,6 +30,8 @@ class Renderer
         void    addShader(GLenum typeShader, std::string shader, GLuint *sh);
         void    errorShader(GLuint id);
         void    init(int nb, int width, int height);
+        void    sphereShape();
+        void    cubeShape();
         float   *matrix;
         GLuint  vaoId;
         GLuint  vboId;
