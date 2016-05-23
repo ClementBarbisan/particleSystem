@@ -41,6 +41,13 @@ void    Renderer::sphereShape()
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
+void    Renderer::changeShape()
+{
+    currentShape = (currentShape + 1) % 2;
+    funcShape func = mapShapes[currentShape];
+    (this->*func)();
+}
+
 void    Renderer::createParticles(int nb)
 {
     int floatByteSize = 4;
@@ -136,6 +143,9 @@ void    Renderer::init(int nb, int width, int height)
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;
     mat_pers[15] = 0.7f;
+    mapShapes = new funcShape[2];
+    mapShapes[0] = &Renderer::sphereShape;
+    mapShapes[1] = &Renderer::cubeShape;
     matrix = mat_pers;
     nbParticles = nb;
     createParticles(nb);

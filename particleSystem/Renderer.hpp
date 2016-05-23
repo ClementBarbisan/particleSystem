@@ -15,13 +15,16 @@
 #include <stdio.h>
 #include <string>
 #include "Particle.h"
+#include <map>
 
 class Renderer
 {
+    typedef void (Renderer::*funcShape)(void);
     public:
         Renderer();
         Renderer(int particlesNb, int width, int height);
         void    render();
+        void    changeShape();
         ~Renderer();
     private:
         int     nbParticles;
@@ -33,6 +36,8 @@ class Renderer
         void    sphereShape();
         void    cubeShape();
         float   *matrix;
+        int     currentShape;
+        funcShape *mapShapes;
         GLuint  vaoId;
         GLuint  vboId;
         GLuint  pId;
