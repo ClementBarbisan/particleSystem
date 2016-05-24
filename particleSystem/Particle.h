@@ -14,6 +14,12 @@ struct Particle
     float x;
     float y;
     float z;
+    float velocity_x;
+    float velocity_y;
+    float velocity_z;
+    float mass;
+    float r;
+    float b;
 };
 
 #endif /* Particle_h */

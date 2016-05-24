@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <string>
 #include "Particle.h"
+#include "CL.hpp"
 #include <map>
 
 class Renderer
@@ -23,27 +24,36 @@ class Renderer
     public:
         Renderer();
         Renderer(int particlesNb, int width, int height);
-        void    render();
-        void    changeShape();
+        void        render(int mouseX, int mouseY, bool mouseDown);
+        void        changeShape();
         ~Renderer();
     private:
-        int     nbParticles;
-        void    createParticles(int nb);
-        void    createProgram();
-        void    addShader(GLenum typeShader, std::string shader, GLuint *sh);
-        void    errorShader(GLuint id);
-        void    init(int nb, int width, int height);
-        void    sphereShape();
-        void    cubeShape();
-        float   *matrix;
-        int     currentShape;
-        funcShape *mapShapes;
-        GLuint  vaoId;
-        GLuint  vboId;
-        GLuint  pId;
-        GLuint  vshId;
-        GLuint  fshId;
-        GLuint  err;
+        int         nbParticles;
+        int         width;
+        int         height;
+        void        createParticles(int nb);
+        void        createProgram();
+        void        addShader(GLenum typeShader, std::string shader, GLuint *sh);
+        void        errorShader(GLuint id);
+        void        init(int nb, int width, int height);
+        void        sphereShape();
+        void        cubeShape();
+        void        openclComputation();
+        void        gravityBehaviour();
+        float       *matrix;
+        bool        lock;
+        bool        gravity;
+        int         currentMouseX;
+        int         currentMouseY;
+        int         currentShape;
+        CL          *clObject;
+        funcShape   *mapShapes;
+        GLuint      vaoId;
+        GLuint      vboId;
+        GLuint      pId;
+        GLuint      vshId;
+        GLuint      fshId;
+        GLuint      err;
 };
 
 #endif /* Renderer_hpp */

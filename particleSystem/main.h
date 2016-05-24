@@ -19,6 +19,9 @@
 
 bool toExit;
 Renderer *renderer;
+int mouseX;
+int mouseY;
+bool onClick;
 GLuint err;
 
 #endif /* main_h */

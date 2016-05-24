@@ -27,23 +27,48 @@ void    initglfw()
 void    init()
 {
     toExit = false;
+    onClick = false;
+    mouseY = 0;
+    mouseX = 0;
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glViewport(0, 0, WIDTH, HEIGHT);
     glEnable( GL_DEPTH_TEST );
     glEnable (GL_BLEND);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     renderer = new Renderer();
-    
 }
 
-void	callback_key(GLFWwindow* window, int key, int scancode, int action, int mods)
+void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    toExit = true;
+    if (window && action == GLFW_PRESS)
+    {
+        if (key == 256)
+             toExit = true;
+        else if (key == 32)
+            renderer->changeShape();
+    }
+}
+
+void    onClickButton(GLFWwindow *window, int button, int action, int mods)
+{
+    if (button == 0)
+    {
+        if (action == GLFW_PRESS)
+            onClick = true;
+        else
+            onClick = false;
+    }
+}
+
+void    onMouseMove(GLFWwindow *window, double x, double y)
+{
+    mouseX = x;
+    mouseY = y;
 }
 
 void    render()
 {
-    renderer->render();
+    renderer->render(mouseX, mouseY, onClick);
 }
 
 void    mainLoop(GLFWwindow *window)
@@ -71,7 +96,9 @@ int main(int argc, const char * argv[])
         try
         {
             init();
-            glfwSetKeyCallback(window, callback_key);
+            glfwSetKeyCallback(window, callbackKey);
+            glfwSetCursorPosCallback(window, onMouseMove);
+            glfwSetMouseButtonCallback(window, onClickButton);
             mainLoop(window);
         }
         catch (const std::exception &e)
