@@ -9,6 +9,8 @@
 #include "CL.hpp"
 #include <iostream>
 #include <fstream>
+#include <cmath>
+#include "utils.hpp"
 
 void      CL::createContext()
 {
@@ -45,17 +47,47 @@ void    CL::createCommandQueue()
     queue = clCreateCommandQueue(context, devices[0], 0, NULL);
 }
 
-void    CL::compute(int nbParticule)
+void    CL::compute()
 {
-    cl_event event;
-    clEnqueueAcquireGLObjects(queue, 1, &clBuffer, 0, NULL, &event);
-    clWaitForEvents(1, &event);
-    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &clBuffer);
-    size_t global[1] = {static_cast<size_t>(nbParticule) / 10};
-    clEnqueueNDRangeKernel(queue, kernel, 1, NULL, global, NULL, 0, NULL, &event);
-    clWaitForEvents(1, &event);
-    clEnqueueReleaseGLObjects(queue, 1, &clBuffer, 0, NULL, &event);
-    clWaitForEvents(1, &event);
+    clEnqueueAcquireGLObjects(queue, 1, &clBuffer, 0, NULL, NULL);
+    clFinish(queue);
+    
+    err = clEnqueueNDRangeKernel(queue, kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+    clFinish(queue);
+    clEnqueueReleaseGLObjects(queue, 1, &clBuffer, 0, NULL, NULL);
+    clFinish(queue);
+    if (err != CL_SUCCESS)
+    {
+        std::cout << err << std::endl;
+        if (err == CL_OUT_OF_RESOURCES)
+            throw std::runtime_error ("Failed to execute kernel : OUT_OF_RESOUCES");
+        else if (err == CL_INVALID_WORK_GROUP_SIZE)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_WORK_GROUP_SIZE");
+        else if (err == CL_OUT_OF_HOST_MEMORY)
+            throw std::runtime_error ("Failed to execute kernel : CL_OUT_OF_HOST_MEMORY");
+        else if (err == CL_MEM_OBJECT_ALLOCATION_FAILURE)
+            throw std::runtime_error ("Failed to execute kernel : CL_MEM_OBJECT_ALLOCATION_FAILURE");
+        else if (err == CL_INVALID_PROGRAM_EXECUTABLE)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_PROGRAM_EXECUTABLEE");
+        else if (err == CL_INVALID_COMMAND_QUEUE)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_COMMAND_QUEUE");
+        else if (err == CL_INVALID_KERNEL)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_KERNEL");
+        else if (err == CL_INVALID_CONTEXT)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_CONTEXT");
+        else if (err == CL_INVALID_WORK_ITEM_SIZE)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_WORK_ITEM_SIZE");
+        else if (err == CL_INVALID_KERNEL_ARGS)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_KERNEL_ARGS");
+        else if (err == CL_INVALID_GLOBAL_OFFSET)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_GLOBAL_OFFSET");
+        else if (err == CL_INVALID_EVENT_WAIT_LIST)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_EVENT_WAIT_LIST");
+        else if (err == CL_INVALID_WORK_DIMENSION)
+            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_WORK_DIMENSION");
+        else
+            throw std::runtime_error ("Failed to execute kernel : unknown");
+    }
 }
 
 void    CL::createProgram(std::string filename)
@@ -77,9 +109,38 @@ void    CL::shareBuffer(GLuint vboId)
         throw std::runtime_error ("Failed to create buffer from GLbuffer");
 }
 
-void    CL::createKernel(std::string name)
+void    CL::calculateWorkSize()
 {
+    size_t tmp = sqrt(particules);
+    size_t multiple = findMultiple(tmp, 64);
+    tmp /= multiple;
+    multiple *= multiple;
+    globalWorkSize = new size_t[3];
+    localWorkSize = new size_t[3];
+    globalWorkSize[0] = tmp;
+    globalWorkSize[1] = tmp;
+    globalWorkSize[2] = multiple;
+    std::cout << "globalWorkSize = " << tmp << ", " << tmp << ", " << multiple << std::endl;
+    size_t localMultiple = findMultiple(tmp, 64);
+    localWorkSize[0] = localMultiple;
+    localWorkSize[1] = localMultiple;
+    size_t currentMultiple = findMultiple(multiple, 64);
+    while (localMultiple * localMultiple * currentMultiple > 1024)
+        currentMultiple = findMultiple(multiple, currentMultiple);
+    localWorkSize[2] = currentMultiple;
+    std::cout << "localMultiple = " << localMultiple << ", " << localMultiple << ", " << currentMultiple << std::endl;
+}
+
+void    CL::createKernel(std::string name, int nbParticule)
+{
+    size_t size;
     kernel = clCreateKernel(program, name.c_str(), &err);
+    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &clBuffer);
+    clGetKernelWorkGroupInfo(kernel, devices[0], CL_KERNEL_WORK_GROUP_SIZE, 0, NULL, &size);
+    clGetKernelWorkGroupInfo(kernel, devices[0], CL_KERNEL_WORK_GROUP_SIZE, size, &kernelGroupSize, 0);
+    std::cout << "kernelWorkGroupSize = " << kernelGroupSize << std::endl;
+    particules = nbParticule;
+    calculateWorkSize();
     if (err != CL_SUCCESS)
         throw std::runtime_error ("Failed to create kernel");
 }
@@ -89,12 +150,34 @@ cl_kernel    CL::getKernel()
     return (kernel);
 }
 
+void    CL::getDeviceInfo()
+{
+    size_t size;
+    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_COMPUTE_UNITS, 0, NULL, &size);
+    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_COMPUTE_UNITS, size, &computeUnits, NULL);
+    std::cout << "computeUnits = " << computeUnits << std::endl;
+    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, NULL, &size);
+    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_GROUP_SIZE, size, &workGroupSize, 0);
+    std::cout << "workGroupSize = " << workGroupSize << std::endl;
+    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, 0, NULL, &size);
+    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, size, &workItemDimensions, 0);
+    std::cout << "workItemsDimensions = " << workItemDimensions << std::endl;
+    size_t workItems[workItemDimensions];
+    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(workItems), &workItems, 0);
+    std::cout << "workItemsSize = { " << workItems[0];
+    for (int i = 1; i < workItemDimensions; i++)
+        std::cout << ", " << workItems[i];
+    std::cout << "}" << std::endl;
+    workItemsSize = workItems;
+}
+
 CL::CL()
 {
     createPlatform();
     getDevices();
     createContext();
     createCommandQueue();
+    getDeviceInfo();
 }
 
 CL::~CL()

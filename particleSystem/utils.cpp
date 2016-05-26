@@ -42,3 +42,10 @@ std::string    getCurrentDir()
         throw std::runtime_error("Failed to find current directory.");
     return (std::string(currentPath));
 }
+
+size_t          findMultiple(size_t value, size_t div)
+{
+    while (value % div)
+        div--;
+    return (div);
+}

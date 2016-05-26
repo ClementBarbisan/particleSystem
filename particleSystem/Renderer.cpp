@@ -83,9 +83,9 @@ void    Renderer::changeShape()
 void    Renderer::createParticles(int nb)
 {
     int floatByteSize = 4;
-    int positionFloatCount = 3;
-    int velocityFloatCount = 3;
-    int massFloatCount = 3;
+    int positionFloatCount = 4;
+    int velocityFloatCount = 4;
+    int massFloatCount = 4;
     int floatsPerVertex = positionFloatCount + velocityFloatCount + massFloatCount;
     int vertexFloatSizeInBytes = floatByteSize * floatsPerVertex;
     
@@ -93,9 +93,9 @@ void    Renderer::createParticles(int nb)
     glGenBuffers(1, &vboId);
     glBindVertexArray(vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    glBufferData(GL_ARRAY_BUFFER, nb * sizeof(Particle), NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, (nb + 1) * sizeof(Particle), NULL, GL_STATIC_DRAW);
     sphereShape();
-    glVertexAttribPointer(0, positionFloatCount, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, 0);
 //    glVertexAttribPointer(1, velocityFloatCount, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, (void *)(sizeof(GL_FLOAT) * 3));
 //    glVertexAttribPointer(2, massFloatCount, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, (void *)(sizeof(GL_FLOAT) * 6));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -134,7 +134,7 @@ void    Renderer::openclComputation()
     clSetKernelArg(clObject->getKernel(), 1, sizeof(float),  &tmp);
     tmp = static_cast<float>(currentMouseY) / height;
     clSetKernelArg(clObject->getKernel(), 2, sizeof(float),  &tmp);
-    clObject->compute(nbParticles);
+    clObject->compute();
 }
 
 void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
@@ -146,16 +146,19 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
         currentMouseX = mouseX;
         currentMouseY = mouseY;
     }
-    if (gravity)
-        openclComputation();
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(pId);
     glBindVertexArray(vaoId);
+    glBindBuffer(GL_ARRAY_BUFFER, vboId);
+    if (gravity)
+        openclComputation();
     glUniformMatrix4fv(glGetUniformLocation(pId, "projectionMatrix"), 1, GL_FALSE, matrix);
     glUniform2f(glGetUniformLocation(pId, "mousePos"), static_cast<float>(mouseX) / width , static_cast<float>(mouseY) / height);
     glEnableVertexAttribArray(0);
     glDrawArrays(GL_POINTS, 0, nbParticles);
     glDisableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glUseProgram(0);
 }
@@ -212,7 +215,7 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     clObject = new CL();
     clObject->shareBuffer(vboId);
     clObject->createProgram("particles.cl");
-    clObject->createKernel("compute");
+    clObject->createKernel("compute", nbParticles);
     
 }
 
@@ -223,7 +226,7 @@ Renderer::Renderer(int particlesNb, int width, int height)
 
 Renderer::Renderer()
 {
-    init(1000000, 800, 600);
+    init(3000000, 800, 600);
 }
 
 Renderer::~Renderer()

@@ -33,13 +33,23 @@ class CL
         void                createPlatform();
         void                getDevices();
         void                createCommandQueue();
+        void                getDeviceInfo();
+        size_t              workGroupSize;
+        cl_uint             workItemDimensions;
+        size_t              *workItemsSize;
+        cl_uint             computeUnits;
+        size_t              kernelGroupSize;
+        size_t              *globalWorkSize;
+        size_t              *localWorkSize;
+        int                 particules;
+        void                calculateWorkSize();
     public:
         CL();
         ~CL();
-        void                compute(int nbParticule);
+        void                compute();
         void                createProgram(std::string filename);
         void                shareBuffer(GLuint vboId);
-        void                createKernel(std::string name);
+        void                createKernel(std::string name, int nbParticule);
         cl_kernel           getKernel();
         int                 num;
     
