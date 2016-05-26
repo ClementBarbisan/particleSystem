@@ -125,8 +125,8 @@ void    CL::calculateWorkSize()
     localWorkSize[0] = localMultiple;
     localWorkSize[1] = localMultiple;
     size_t currentMultiple = findMultiple(multiple, 64);
-    while (localMultiple * localMultiple * currentMultiple > 1024)
-        currentMultiple = findMultiple(multiple, currentMultiple);
+    while (localMultiple * localMultiple * currentMultiple > 1024 && currentMultiple > 1)
+        currentMultiple = findMultiple(multiple, currentMultiple - 1);
     localWorkSize[2] = currentMultiple;
     std::cout << "localMultiple = " << localMultiple << ", " << localMultiple << ", " << currentMultiple << std::endl;
 }

@@ -45,7 +45,7 @@ std::string    getCurrentDir()
 
 size_t          findMultiple(size_t value, size_t div)
 {
-    while (value % div)
+    while (div > 1 && value % div)
         div--;
     return (div);
 }

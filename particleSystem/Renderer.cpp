@@ -226,7 +226,7 @@ Renderer::Renderer(int particlesNb, int width, int height)
 
 Renderer::Renderer()
 {
-    init(3000000, 800, 600);
+    init(1000000, 800, 600);
 }
 
 Renderer::~Renderer()
