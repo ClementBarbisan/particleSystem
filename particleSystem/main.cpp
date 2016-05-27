@@ -24,7 +24,7 @@ void    initglfw()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
-void    init()
+void    init(int nb)
 {
     toExit = false;
     onClick = false;
@@ -33,9 +33,9 @@ void    init()
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0, 0, WIDTH, HEIGHT);
     glEnable( GL_DEPTH_TEST );
-//    glEnable (GL_BLEND);
-//    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    renderer = new Renderer();
+    glEnable (GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    renderer = new Renderer(nb, WIDTH, HEIGHT);
 }
 
 void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -88,14 +88,14 @@ int main(int argc, const char * argv[])
     GLFWwindow  *window;
     
     initglfw();
-    if ((window = glfwCreateWindow(WIDTH, HEIGHT, "Particle system", nullptr, nullptr)))
+    if (argc > 1 && (window = glfwCreateWindow(WIDTH, HEIGHT, "Particle system", nullptr, nullptr)))
     {
         glfwMakeContextCurrent(window);
         glfwSetWindowPos(window, 50, 50);
         glfwShowWindow(window);
         try
         {
-            init();
+            init(stringToInt(argv[1]));
             glfwSetKeyCallback(window, callbackKey);
             glfwSetCursorPosCallback(window, onMouseMove);
             glfwSetMouseButtonCallback(window, onClickButton);

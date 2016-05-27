@@ -19,5 +19,6 @@ std::string     searchError(GLuint error);
 std::string     fileToString(std::string filename);
 std::string     getCurrentDir();
 size_t          findMultiple(size_t value, size_t div);
+int             stringToInt(const char *str);
 
 #endif /* utils_hpp */

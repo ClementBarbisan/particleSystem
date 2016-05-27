@@ -14,70 +14,33 @@
 
 void    Renderer::cubeShape()
 {
-    Particle *particles = (Particle *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    for (int i; i < nbParticles; i++)
-    {
-        float rand1 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        particles->x = rand1 >= 0.66 ? (rand() % 2) > 0 ? 0.5 : -0.5 : -0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        particles->y = rand1 < 0.66 && rand1 >= 0.33 ? (rand() % 2) > 0 ? 0.5 : -0.5 : -0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        particles->z = rand1 < 0.33 ? (rand() % 2) > 0 ? 0.0 : -1.0 : -1.0 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        particles->velocity_x = 0.0;
-        particles->velocity_y = 0.0;
-        particles->velocity_z = 0.0;
-        particles->mass = 0.0;
-        particles->r = 0.0;
-        particles->b = 0.0;
-        particles++;
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
+    size_t size = clObject->getTotalWorkSize();
+    clSetKernelArg(clObject->getKernel(0), 1, sizeof(size_t), &size);
+    clObject->compute(0);
 }
 
 void    Renderer::sphereShape()
 {
-    Particle *particles = (Particle *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    for (int i; i < nbParticles; i++)
-    {
-        float rand1 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 180);
-        float rand2 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 360);
-        particles->x = sin(rand1) * cos(rand2);
-        particles->y = sin(rand1) * sin(rand2);
-        particles->z = cos(rand1);
-        particles->velocity_x = 0.0;
-        particles->velocity_y = 0.0;
-        particles->velocity_z = 0.0;
-        particles->mass = 0.0;
-        particles->r = 0.0;
-        particles->b = 0.0;
-        particles++;
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
+    size_t size = clObject->getTotalWorkSize();
+    clSetKernelArg(clObject->getKernel(1), 1, sizeof(size_t), &size);
+    clObject->compute(1);
 }
 
 void    Renderer::gravityBehaviour()
 {
     gravity = true;
-    Particle *particles = (Particle *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    for (int i; i < nbParticles; i++)
-    {
-        particles->velocity_x = (rand()%1000/1000.-.5)*.1;
-        particles->velocity_y = (rand()%1000/1000.-.5)*.1;
-        particles->velocity_z = (rand()%1000/1000.-.5)*.1;
-        particles->mass = 0.01;
-        particles++;
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
+    openclComputation();
 }
 
 void    Renderer::changeShape()
 {
     currentShape = (currentShape + 1) % 3 ;
     funcShape func = mapShapes[currentShape];
-    glBindVertexArray(vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
     gravity = false;
     (this->*func)();
+    glFinish();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 }
 
 void    Renderer::createParticles(int nb)
@@ -93,8 +56,7 @@ void    Renderer::createParticles(int nb)
     glGenBuffers(1, &vboId);
     glBindVertexArray(vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    glBufferData(GL_ARRAY_BUFFER, (nb + 1) * sizeof(Particle), NULL, GL_STATIC_DRAW);
-    sphereShape();
+    glBufferData(GL_ARRAY_BUFFER, (nb) * sizeof(Particle), NULL, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, 0);
 //    glVertexAttribPointer(1, velocityFloatCount, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, (void *)(sizeof(GL_FLOAT) * 3));
 //    glVertexAttribPointer(2, massFloatCount, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, (void *)(sizeof(GL_FLOAT) * 6));
@@ -131,10 +93,10 @@ void    Renderer::addShader(GLenum typeShader, std::string shader, GLuint *sh)
 void    Renderer::openclComputation()
 {
     float tmp = static_cast<float>(currentMouseX) / width;
-    clSetKernelArg(clObject->getKernel(), 1, sizeof(float),  &tmp);
+    clSetKernelArg(clObject->getKernel(2), 1, sizeof(float),  &tmp);
     tmp = static_cast<float>(currentMouseY) / height;
-    clSetKernelArg(clObject->getKernel(), 2, sizeof(float),  &tmp);
-    clObject->compute();
+    clSetKernelArg(clObject->getKernel(2), 2, sizeof(float),  &tmp);
+    clObject->compute(2);
 }
 
 void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
@@ -146,11 +108,10 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
         currentMouseX = mouseX;
         currentMouseY = mouseY;
     }
-    
+    glFinish();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(pId);
     glBindVertexArray(vaoId);
-    glBindBuffer(GL_ARRAY_BUFFER, vboId);
     if (gravity)
         openclComputation();
     glUniformMatrix4fv(glGetUniformLocation(pId, "projectionMatrix"), 1, GL_FALSE, matrix);
@@ -158,7 +119,6 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
     glEnableVertexAttribArray(0);
     glDrawArrays(GL_POINTS, 0, nbParticles);
     glDisableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glUseProgram(0);
 }
@@ -184,6 +144,7 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     float	*mat_pers;
     width = currentWidth;
     height = currentHeight;
+    gravity = false;
     lock = false;
     mat_pers = new float[16];
     mat_pers[0] = 1.0f / (((float)width / (float)height) * \
@@ -197,8 +158,8 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     mat_pers[7] = 0.0f;
     mat_pers[8] = 0.0f;
     mat_pers[9] = 0.0f;
-    mat_pers[10] = (0.2f - 1.0f) / (-0.2f - 1.0f);
-    mat_pers[11] = (2.0f * -0.2f * 1.0f) / (-0.2f - 1.0f);
+    mat_pers[10] = (0.2f - 100.0f) / (-0.2f - 100.0f);
+    mat_pers[11] = (2.0f * -0.2f * 100.0f) / (-0.2f - 100.0f);
     mat_pers[12] = 0.0f;
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;
@@ -215,7 +176,10 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     clObject = new CL();
     clObject->shareBuffer(vboId);
     clObject->createProgram("particles.cl");
-    clObject->createKernel("compute", nbParticles);
+    clObject->createKernel("cube", nbParticles);
+    clObject->createKernel("sphere", nbParticles);
+    clObject->createKernel("gravity", nbParticles);
+    sphereShape();
     
 }
 
@@ -226,7 +190,7 @@ Renderer::Renderer(int particlesNb, int width, int height)
 
 Renderer::Renderer()
 {
-    init(1000000, 800, 600);
+    init(2000000, 800, 600);
 }
 
 Renderer::~Renderer()
@@ -238,5 +202,6 @@ Renderer::~Renderer()
     glDeleteProgram(pId);
     glDeleteShader (vshId);
     glDeleteShader (fshId);
+    glFinish();
     glDeleteBuffers(1, &vboId);
 }

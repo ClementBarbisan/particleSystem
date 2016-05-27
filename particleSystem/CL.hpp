@@ -25,9 +25,8 @@ class CL
         cl_context          context;
         cl_command_queue    queue;
         cl_program          program;
-        cl_kernel           kernel;
+        cl_kernel           *kernel;
         cl_int              err;
-        cl_event            event;
         cl_mem              clBuffer;
         void                createContext();
         void                createPlatform();
@@ -41,16 +40,19 @@ class CL
         size_t              kernelGroupSize;
         size_t              *globalWorkSize;
         size_t              *localWorkSize;
+        size_t              totalWorkSize;
         int                 particules;
         void                calculateWorkSize();
+        int                 index;
     public:
         CL();
         ~CL();
-        void                compute();
+        size_t              getTotalWorkSize();
+        void                compute(int indexK);
         void                createProgram(std::string filename);
         void                shareBuffer(GLuint vboId);
         void                createKernel(std::string name, int nbParticule);
-        cl_kernel           getKernel();
+        cl_kernel           getKernel(int i);
         int                 num;
     
 };

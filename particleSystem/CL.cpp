@@ -20,7 +20,7 @@ void      CL::createContext()
         CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
         (cl_context_properties)kCGLShareGroup, 0
     };
-    context = clCreateContext(properties, nbDevice, devices, NULL, NULL, &err);
+    context = clCreateContext(properties, 1, devices, NULL, NULL, &err);
     if (err != CL_SUCCESS)
         throw std::runtime_error ("Can't create OpenCL context for GPU.");
 }
@@ -38,7 +38,7 @@ void    CL::getDevices()
     if ((clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &nbDevice)) != CL_SUCCESS || nbDevice <= 0)
         throw std::runtime_error ("Failde to get number of devices available");
     devices = new cl_device_id[nbDevice];
-    if ((err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, nbDevice, devices, NULL)) != CL_SUCCESS)
+    if ((err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, devices, NULL)) != CL_SUCCESS)
             throw std::runtime_error ("Failed to get device IDs.");
 }
 
@@ -47,12 +47,12 @@ void    CL::createCommandQueue()
     queue = clCreateCommandQueue(context, devices[0], 0, NULL);
 }
 
-void    CL::compute()
+void    CL::compute(int indexK)
 {
     clEnqueueAcquireGLObjects(queue, 1, &clBuffer, 0, NULL, NULL);
     clFinish(queue);
     
-    err = clEnqueueNDRangeKernel(queue, kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue, kernel[indexK], 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
     clFinish(queue);
     clEnqueueReleaseGLObjects(queue, 1, &clBuffer, 0, NULL, NULL);
     clFinish(queue);
@@ -112,7 +112,7 @@ void    CL::shareBuffer(GLuint vboId)
 void    CL::calculateWorkSize()
 {
     size_t tmp = sqrt(particules);
-    size_t multiple = findMultiple(tmp, 64);
+    size_t multiple = findMultiple(tmp, 8);
     tmp /= multiple;
     multiple *= multiple;
     globalWorkSize = new size_t[3];
@@ -121,33 +121,40 @@ void    CL::calculateWorkSize()
     globalWorkSize[1] = tmp;
     globalWorkSize[2] = multiple;
     std::cout << "globalWorkSize = " << tmp << ", " << tmp << ", " << multiple << std::endl;
-    size_t localMultiple = findMultiple(tmp, 64);
+    totalWorkSize = tmp * tmp * multiple;
+    size_t localMultiple = findMultiple(tmp, 32);
     localWorkSize[0] = localMultiple;
     localWorkSize[1] = localMultiple;
     size_t currentMultiple = findMultiple(multiple, 64);
-    while (localMultiple * localMultiple * currentMultiple > 1024 && currentMultiple > 1)
+    while (localMultiple * localMultiple * currentMultiple > workGroupSize && currentMultiple > 1)
         currentMultiple = findMultiple(multiple, currentMultiple - 1);
     localWorkSize[2] = currentMultiple;
     std::cout << "localMultiple = " << localMultiple << ", " << localMultiple << ", " << currentMultiple << std::endl;
 }
 
+size_t  CL::getTotalWorkSize()
+{
+    return (totalWorkSize);
+}
+
 void    CL::createKernel(std::string name, int nbParticule)
 {
     size_t size;
-    kernel = clCreateKernel(program, name.c_str(), &err);
-    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &clBuffer);
-    clGetKernelWorkGroupInfo(kernel, devices[0], CL_KERNEL_WORK_GROUP_SIZE, 0, NULL, &size);
-    clGetKernelWorkGroupInfo(kernel, devices[0], CL_KERNEL_WORK_GROUP_SIZE, size, &kernelGroupSize, 0);
+    kernel[index] = clCreateKernel(program, name.c_str(), &err);
+    err = clSetKernelArg(kernel[index], 0, sizeof(cl_mem), &clBuffer);
+    clGetKernelWorkGroupInfo(kernel[index], devices[0], CL_KERNEL_WORK_GROUP_SIZE, 0, NULL, &size);
+    clGetKernelWorkGroupInfo(kernel[index], devices[0], CL_KERNEL_WORK_GROUP_SIZE, size, &kernelGroupSize, 0);
     std::cout << "kernelWorkGroupSize = " << kernelGroupSize << std::endl;
     particules = nbParticule;
     calculateWorkSize();
+    index++;
     if (err != CL_SUCCESS)
         throw std::runtime_error ("Failed to create kernel");
 }
 
-cl_kernel    CL::getKernel()
+cl_kernel    CL::getKernel(int i)
 {
-    return (kernel);
+    return (kernel[i]);
 }
 
 void    CL::getDeviceInfo()
@@ -165,7 +172,7 @@ void    CL::getDeviceInfo()
     size_t workItems[workItemDimensions];
     clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(workItems), &workItems, 0);
     std::cout << "workItemsSize = { " << workItems[0];
-    for (int i = 1; i < workItemDimensions; i++)
+    for (size_t i = 1; i < workItemDimensions; i++)
         std::cout << ", " << workItems[i];
     std::cout << "}" << std::endl;
     workItemsSize = workItems;
@@ -173,6 +180,8 @@ void    CL::getDeviceInfo()
 
 CL::CL()
 {
+    kernel = new cl_kernel[3];
+    index = 0;
     createPlatform();
     getDevices();
     createContext();
@@ -182,6 +191,14 @@ CL::CL()
 
 CL::~CL()
 {
+    clReleaseDevice(devices[0]);
+    for (int i = 0; i < index; i++)
+        clReleaseKernel(kernel[i]);
+    clReleaseContext(context);
+    clReleaseProgram(program);
+    clReleaseMemObject(clBuffer);
+    clReleaseCommandQueue(queue);
     delete devices;
+    delete kernel;
 }
 

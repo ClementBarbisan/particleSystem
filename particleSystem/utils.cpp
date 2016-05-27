@@ -8,6 +8,7 @@
 
 #include "utils.hpp"
 #include <unistd.h>
+#include <sstream>
 
 std::string    searchError(GLuint error)
 {
@@ -48,4 +49,15 @@ size_t          findMultiple(size_t value, size_t div)
     while (div > 1 && value % div)
         div--;
     return (div);
+}
+
+int             stringToInt(const char *str)
+{
+    std::string hello(str);
+    std::stringstream string(hello);
+    int x;
+    string >> x;
+    if (!str)
+        throw std::logic_error(std::string(str) + " : Not an int");
+    return (x);
 }
