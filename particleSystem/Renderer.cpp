@@ -134,8 +134,10 @@ void    Renderer::createProgram()
     pId = glCreateProgram();
     addShader(GL_VERTEX_SHADER, fileToString(getCurrentDir() + "/shader.vsh"), &vshId);
     addShader(GL_FRAGMENT_SHADER, fileToString(getCurrentDir() + "/shader.fsh"), &fshId);
+    addShader(GL_GEOMETRY_SHADER, fileToString(getCurrentDir() + "/shader.gsh"), &gshId);
     glAttachShader(pId, vshId);
     glAttachShader(pId, fshId);
+    glAttachShader(pId, gshId);
     glBindAttribLocation(pId, 0, "vertexPosition");
     glBindAttribLocation(pId, 1, "velocity");
     glBindAttribLocation(pId, 2, "mass");
@@ -210,6 +212,7 @@ Renderer::~Renderer()
     glDeleteProgram(pId);
     glDeleteShader (vshId);
     glDeleteShader (fshId);
+    glDeleteShader (gshId);
     glFinish();
     glDeleteBuffers(1, &vboId);
 }

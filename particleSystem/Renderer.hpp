@@ -52,6 +52,7 @@ class Renderer
         GLuint      vaoId;
         GLuint      vboId;
         GLuint      pId;
+        GLuint      gshId;
         GLuint      vshId;
         GLuint      fshId;
         GLuint      err;
