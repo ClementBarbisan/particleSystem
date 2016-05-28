@@ -81,11 +81,13 @@ void    render()
 void    mainLoop(GLFWwindow *window)
 {
     double  currentTime;
+    double  oldTime = 0.0;
     double  lastTime = 0.0;
     int     frames = 0;
     while (!toExit)
     {
         currentTime = glfwGetTime();
+        renderer->setDelta((currentTime - oldTime) / 3.0f);
         frames++;
         if (currentTime - lastTime >= 1.0)
         {
@@ -101,6 +103,7 @@ void    mainLoop(GLFWwindow *window)
             throw std::runtime_error(searchError(err));
         glfwPollEvents();
         glfwSwapBuffers(window);
+        oldTime = currentTime;
     }
 }
 

@@ -36,6 +36,8 @@
 		2E4A93B91CEB05A3005F15CE /* CL.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CL.hpp; sourceTree = "<group>"; };
 		2E5305C51CE5DAFC00112140 /* particleSystem */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = particleSystem; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E5305C81CE5DAFC00112140 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		2E77F4081CF9FE2D001DB5AB /* position.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = position.h; sourceTree = "<group>"; };
+		2E77F4091CF9FEF5001DB5AB /* trigo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = trigo.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +70,7 @@
 		2E5305C71CE5DAFC00112140 /* particleSystem */ = {
 			isa = PBXGroup;
 			children = (
+				2E77F4081CF9FE2D001DB5AB /* position.h */,
 				2E5305C81CE5DAFC00112140 /* main.cpp */,
 				2E4A93B81CEB05A3005F15CE /* CL.cpp */,
 				2E4A93B91CEB05A3005F15CE /* CL.hpp */,
@@ -77,6 +80,7 @@
 				2E41E03E1CF30D04002C4891 /* Particle.h */,
 				2E41E03F1CF30F90002C4891 /* utils.cpp */,
 				2E41E0401CF30F90002C4891 /* utils.hpp */,
+				2E77F4091CF9FEF5001DB5AB /* trigo.h */,
 			);
 			path = particleSystem;
 			sourceTree = "<group>";

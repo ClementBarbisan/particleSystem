@@ -17,6 +17,8 @@
 #include "Particle.h"
 #include "CL.hpp"
 #include <map>
+#include "position.h"
+#include "trigo.h"
 
 class Renderer
 {
@@ -27,6 +29,8 @@ class Renderer
         void        render(int mouseX, int mouseY, bool mouseDown);
         void        changeShape();
 		void		changeProgram();
+        void        setDelta(float dt);
+        t_pos   &   getPosition();
         ~Renderer();
     private:
         int         nbParticles;
@@ -43,14 +47,22 @@ class Renderer
         void        cubeShape();
         void        openclComputation();
         void        gravityBehaviour();
+        void        matrixViewInit();
+        void        matrixPers();
+        t_trigo     createTrigo();
+        void        updateMatrix();
+        void        initPosition();
         float       *matrix;
+        float       *matrixView;
         bool        lock;
+        float       delta;
         bool        gravity;
         int         currentMouseX;
         int         currentMouseY;
         int         currentShape;
         CL          *clObject;
         funcShape   *mapShapes;
+        t_pos       *position;
         GLuint      vaoId;
         GLuint      vboId;
         GLuint      *pId;

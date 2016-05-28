@@ -1,6 +1,7 @@
 __kernel void gravity(__global float4 *data_buffer,
 								float4 grav,
-								float mass)
+								float mass,
+								float delta)
 {
 	int gid1 = get_global_id(0) * 3;
 	int gid2 = get_global_id(1) * 3;
@@ -9,10 +10,10 @@ __kernel void gravity(__global float4 *data_buffer,
 	int size2 = get_global_size(1);
     __global float4* velocity = &data_buffer[(gid1 + (gid3 * size1 * size2) + gid2 * size1) + 1];
     __global float4* pos = &data_buffer[(gid1 + gid3 * size1 * size2 + gid2 * size1)];
-	float4 vec = grav - *pos;
+	float4 vec = (grav - *pos);
 	float4 force = fast_normalize(vec);
-	*velocity +=  force / mass * 0.01f;
-	*pos += *velocity * 0.01f;
+	*velocity +=  force / mass * delta;
+	*pos += *velocity * delta;
 }
 
 __kernel void init_gravity(__global float4 *data_buffer)

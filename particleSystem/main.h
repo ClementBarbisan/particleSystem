@@ -13,6 +13,7 @@
 # include <OpenGL/gl3.h>
 #include <OpenGL/gl.h>
 #include "Renderer.hpp"
+#include "position.h"
 
 #define WIDTH 1024
 #define HEIGHT 768

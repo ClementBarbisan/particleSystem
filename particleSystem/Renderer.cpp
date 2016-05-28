@@ -37,6 +37,11 @@ void	Renderer::changeProgram()
 	programIndex = (programIndex + 1) % 2;
 }
 
+t_pos   &   Renderer::getPosition()
+{
+    return (*position);
+}
+
 void    Renderer::changeShape()
 {
     currentShape = (currentShape + 1) % 3;
@@ -95,6 +100,11 @@ void    Renderer::addShader(GLenum typeShader, std::string shader, GLuint *sh)
         errorShader(*sh);
 }
 
+void    Renderer::setDelta(float dt)
+{
+    delta = dt;
+}
+
 void    Renderer::openclComputation()
 {
     cl_float4 tmp = {
@@ -107,6 +117,7 @@ void    Renderer::openclComputation()
     };
     clSetKernelArg(clObject->getKernel(2), 1, sizeof(cl_float4),  &tmp);
     clSetKernelArg(clObject->getKernel(2), 2, sizeof(float),  &mass);
+    clSetKernelArg(clObject->getKernel(2), 3, sizeof(float),  &delta);
     clObject->compute(2);
 }
 
@@ -158,15 +169,88 @@ void    Renderer::createProgram(int shader)
         throw std::runtime_error(searchError(err) + " : createProgram.");
 }
 
-void    Renderer::init(int nb, int currentWidth, int currentHeight)
+t_trigo	Renderer::createTrigo()
+{
+    t_trigo	trigo;
+    
+    trigo.cos_x = cos(position->rotX);
+    trigo.cos_y = cos(position->rotY);
+    trigo.cos_z = cos(position->rotZ);
+    trigo.sin_x = sin(position->rotX);
+    trigo.sin_y = sin(position->rotY);
+    trigo.sin_z = sin(position->rotZ);
+    trigo.cos_x_sin_y = trigo.cos_x * trigo.sin_y;
+    trigo.sin_x_sin_y = trigo.sin_x * trigo.sin_y;
+    return (trigo);
+}
+
+void	Renderer::updateMatrix()
+{
+    t_trigo	trigo;
+    
+    trigo = createTrigo();
+    matrixView
+    [0] = trigo.cos_y * trigo.cos_z;
+    matrixView[1] = -trigo.cos_y * trigo.sin_z;
+    matrixView[2] = trigo.sin_y;
+    matrixView[3] = position->x;
+    matrixView[4] = trigo.sin_x_sin_y * trigo.cos_z + trigo.cos_x * \
+    trigo.sin_z;
+    matrixView[5] = -trigo.sin_x_sin_y * trigo.sin_z + trigo.cos_x * \
+    trigo.cos_z;
+    matrixView[6] = -trigo.sin_x * trigo.cos_y;
+    matrixView[7] = position->y;
+    matrixView[8] = -trigo.cos_x_sin_y * trigo.cos_z + trigo.sin_x * \
+    trigo.sin_z;
+    matrixView[9] = trigo.cos_x_sin_y * trigo.sin_z + trigo.sin_x * \
+    trigo.cos_z;
+    matrixView[10] = trigo.cos_x * trigo.cos_y;
+    matrixView[11] = position->z;
+    matrixView[12] = 0.0f;
+    matrixView[13] = 0.0f;
+    matrixView[14] = 0.0f;
+    matrixView[15] = 1.0f;
+}
+
+
+void    Renderer::matrixViewInit()
+{
+    GLfloat	*mat_rot;
+    
+    mat_rot = new GLfloat[16];
+    mat_rot[0] = 1.0f;
+    mat_rot[1] = 0.0f;
+    mat_rot[2] = 0.0f;
+    mat_rot[3] = 0.0f;
+    mat_rot[4] = 0.0f;
+    mat_rot[5] = 1.0f;
+    mat_rot[6] = 0.0f;
+    mat_rot[7] = 0.0f;
+    mat_rot[8] = 0.0f;
+    mat_rot[9] = 0.0f;
+    mat_rot[10] = 1.0f;
+    mat_rot[11] = 0.0f;
+    mat_rot[12] = 0.0f;
+    mat_rot[13] = 0.0f;
+    mat_rot[14] = 0.0f;
+    mat_rot[15] = 1.0f;
+    matrixView = mat_rot;
+}
+
+void    Renderer::initPosition()
+{
+    position = new t_pos();
+    position->x = 0.0f;
+    position->y = 0.0f;
+    position->z = 0.0f;
+    position->rotX = 0.0f;
+    position->rotY = 0.0f;
+    position->rotZ = 0.0f;
+}
+
+void    Renderer::matrixPers()
 {
     float	*mat_pers;
-    width = currentWidth;
-    height = currentHeight;
-	programIndex = 0;
-    gravity = false;
-    lock = false;
-    mass = 0.01;
     mat_pers = new float[16];
     mat_pers[0] = 1.0f / (((float)width / (float)height) * \
                           tan(180.0f / 2.0f));
@@ -185,12 +269,27 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;
     mat_pers[15] = 0.3f;
+    matrix = mat_pers;
+}
+
+void    Renderer::init(int nb, int currentWidth, int currentHeight)
+{
+    
+    width = currentWidth;
+    height = currentHeight;
+	programIndex = 0;
+    gravity = false;
+    lock = false;
+    mass = 0.02;
+    delta = 0.01;
+    initPosition();
     mapShapes = new funcShape[3];
     mapShapes[0] = &Renderer::sphereShape;
     mapShapes[1] = &Renderer::cubeShape;
     mapShapes[2] = &Renderer::gravityBehaviour;
     currentShape = 0;
-    matrix = mat_pers;
+    matrixViewInit();
+    matrixPers();
     nbParticles = nb;
     createParticles(nb);
 	pId = new GLuint[2];
