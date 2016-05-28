@@ -26,14 +26,16 @@ class Renderer
         Renderer(int particlesNb, int width, int height);
         void        render(int mouseX, int mouseY, bool mouseDown);
         void        changeShape();
+		void		changeProgram();
         ~Renderer();
     private:
         int         nbParticles;
+		int			programIndex;
         int         width;
         int         height;
         float       mass;
         void        createParticles(int nb);
-        void        createProgram();
+        void        createProgram(int shader);
         void        addShader(GLenum typeShader, std::string shader, GLuint *sh);
         void        errorShader(GLuint id);
         void        init(int nb, int width, int height);
@@ -51,9 +53,9 @@ class Renderer
         funcShape   *mapShapes;
         GLuint      vaoId;
         GLuint      vboId;
-        GLuint      pId;
+        GLuint      *pId;
         GLuint      gshId;
-        GLuint      vshId;
+        GLuint      *vshId;
         GLuint      fshId;
         GLuint      err;
 };

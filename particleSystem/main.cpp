@@ -48,6 +48,8 @@ void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods
              toExit = true;
         else if (key == 32)
             renderer->changeShape();
+		else if (key == 80)
+			renderer->changeProgram();
     }
 }
 

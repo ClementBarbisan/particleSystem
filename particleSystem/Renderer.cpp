@@ -32,9 +32,14 @@ void    Renderer::gravityBehaviour()
     clObject->compute(3);
 }
 
+void	Renderer::changeProgram()
+{
+	programIndex = (programIndex + 1) % 2;
+}
+
 void    Renderer::changeShape()
 {
-    currentShape = (currentShape + 1) % 3 ;
+    currentShape = (currentShape + 1) % 3;
     funcShape func = mapShapes[currentShape];
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
     gravity = false;
@@ -116,12 +121,12 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
     }
     glFinish();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(pId);
+    glUseProgram(pId[programIndex]);
     glBindVertexArray(vaoId);
     if (gravity)
         openclComputation();
-    glUniformMatrix4fv(glGetUniformLocation(pId, "projectionMatrix"), 1, GL_FALSE, matrix);
-    glUniform2f(glGetUniformLocation(pId, "mousePos"), static_cast<float>(mouseX) / width , static_cast<float>(mouseY) / height);
+    glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "projectionMatrix"), 1, GL_FALSE, matrix);
+    glUniform2f(glGetUniformLocation(pId[programIndex], "mousePos"), static_cast<float>(mouseX) / width , static_cast<float>(mouseY) / height);
     glEnableVertexAttribArray(0);
     glDrawArrays(GL_POINTS, 0, nbParticles);
     glDisableVertexAttribArray(0);
@@ -129,20 +134,26 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
     glUseProgram(0);
 }
 
-void    Renderer::createProgram()
+void    Renderer::createProgram(int shader)
 {
-    pId = glCreateProgram();
-    addShader(GL_VERTEX_SHADER, fileToString(getCurrentDir() + "/shader.vsh"), &vshId);
+    pId[shader] = glCreateProgram();
+	
     addShader(GL_FRAGMENT_SHADER, fileToString(getCurrentDir() + "/shader.fsh"), &fshId);
-    addShader(GL_GEOMETRY_SHADER, fileToString(getCurrentDir() + "/shader.gsh"), &gshId);
-    glAttachShader(pId, vshId);
-    glAttachShader(pId, fshId);
-    glAttachShader(pId, gshId);
-    glBindAttribLocation(pId, 0, "vertexPosition");
-    glBindAttribLocation(pId, 1, "velocity");
-    glBindAttribLocation(pId, 2, "mass");
-    glLinkProgram(pId);
-    glValidateProgram(pId);
+	if (shader)
+	{
+		addShader(GL_VERTEX_SHADER, fileToString(getCurrentDir() + "/shader1.vsh"), &vshId[shader]);
+		addShader(GL_GEOMETRY_SHADER, fileToString(getCurrentDir() + "/shader.gsh"), &gshId);
+		glAttachShader(pId[shader], gshId);
+	}
+	else
+		addShader(GL_VERTEX_SHADER, fileToString(getCurrentDir() + "/shader2.vsh"), &vshId[shader]);
+    glAttachShader(pId[shader], vshId[shader]);
+    glAttachShader(pId[shader], fshId);
+    glBindAttribLocation(pId[shader], 0, "vertexPosition");
+    glBindAttribLocation(pId[shader], 1, "velocity");
+    glBindAttribLocation(pId[shader], 2, "mass");
+    glLinkProgram(pId[shader]);
+    glValidateProgram(pId[shader]);
     if ((err = glGetError()) != GL_NO_ERROR)
         throw std::runtime_error(searchError(err) + " : createProgram.");
 }
@@ -152,6 +163,7 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     float	*mat_pers;
     width = currentWidth;
     height = currentHeight;
+	programIndex = 0;
     gravity = false;
     lock = false;
     mass = 0.01;
@@ -181,7 +193,10 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     matrix = mat_pers;
     nbParticles = nb;
     createParticles(nb);
-    createProgram();
+	pId = new GLuint[2];
+	vshId = new GLuint[2];
+    createProgram(0);
+	createProgram(1);
     clObject = new CL();
     clObject->shareBuffer(vboId);
     clObject->createProgram("particles.cl");
@@ -207,10 +222,16 @@ Renderer::~Renderer()
 {
     delete clObject;
     delete mapShapes;
-    glDetachShader(pId, vshId);
-    glDetachShader(pId, fshId);
-    glDeleteProgram(pId);
-    glDeleteShader (vshId);
+    glDetachShader(pId[0], vshId[0]);
+    glDetachShader(pId[0], fshId);
+    glDeleteProgram(pId[0]);
+	glDetachShader(pId[1], vshId[1]);
+	glDetachShader(pId[1], fshId);
+	glDetachShader(pId[1], gshId);
+	glDeleteProgram(pId[0]);
+    glDeleteShader (vshId[0]);
+	glDeleteProgram(pId[1]);
+	glDeleteShader (vshId[1]);
     glDeleteShader (fshId);
     glDeleteShader (gshId);
     glFinish();
