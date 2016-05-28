@@ -154,7 +154,7 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     height = currentHeight;
     gravity = false;
     lock = false;
-    mass = 0.05;
+    mass = 0.01;
     mat_pers = new float[16];
     mat_pers[0] = 1.0f / (((float)width / (float)height) * \
                           tan(180.0f / 2.0f));

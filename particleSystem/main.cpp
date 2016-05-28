@@ -24,14 +24,16 @@ void    initglfw()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
-void    init(int nb)
+void    init(int nb, GLFWwindow *window)
 {
     toExit = false;
     onClick = false;
     mouseY = 0;
     mouseX = 0;
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glViewport(0, 0, WIDTH, HEIGHT);
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+	glViewport(0, 0, width, height);
     glEnable( GL_DEPTH_TEST );
     glEnable (GL_BLEND);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -112,7 +114,7 @@ int main(int argc, const char * argv[])
         glfwShowWindow(window);
         try
         {
-            init(stringToInt(argv[1]));
+            init(stringToInt(argv[1]), window);
             glfwSetKeyCallback(window, callbackKey);
             glfwSetCursorPosCallback(window, onMouseMove);
             glfwSetMouseButtonCallback(window, onClickButton);

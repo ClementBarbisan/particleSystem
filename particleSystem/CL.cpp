@@ -36,10 +36,12 @@ void  CL::createPlatform()
 void    CL::getDevices()
 {
     if ((clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &nbDevice)) != CL_SUCCESS || nbDevice <= 0)
-        throw std::runtime_error ("Failde to get number of devices available");
+        throw std::runtime_error ("Failed to get number of devices available");
     devices = new cl_device_id[nbDevice];
-    if ((err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, devices, NULL)) != CL_SUCCESS)
+    if ((err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, nbDevice, devices, NULL)) != CL_SUCCESS)
             throw std::runtime_error ("Failed to get device IDs.");
+	if (nbDevice > 1)
+		devices[0] = devices[1];
 }
 
 void    CL::createCommandQueue()
@@ -98,11 +100,8 @@ void    CL::createProgram(std::string filename)
     program = clCreateProgramWithSource(context, 1, &file, NULL, &err);
     if (err != CL_SUCCESS)
         throw std::runtime_error ("Failed to create program from source.");
-    if ((err = clBuildProgram(program, 1, &devices[0], NULL, NULL, NULL)) != CL_SUCCESS)
-    {
-        std::cout << err << std::endl;
-        throw std::runtime_error ("Failed to build program");
-    }
+    if ((err = clBuildProgram(program, 1, devices, NULL, NULL, NULL)) != CL_SUCCESS)
+        throw std::runtime_error ("Failed to build program : "  + std::to_string(err));
 }
 
 void    CL::shareBuffer(GLuint vboId)
@@ -146,6 +145,8 @@ void    CL::createKernel(std::string name, int nbParticule)
 {
     size_t size;
     kernel[index] = clCreateKernel(program, name.c_str(), &err);
+	if (err != CL_SUCCESS)
+		throw std::runtime_error ("Failed to create kernel : " + std::to_string(err));
     err = clSetKernelArg(kernel[index], 0, sizeof(cl_mem), &clBuffer);
     clGetKernelWorkGroupInfo(kernel[index], devices[0], CL_KERNEL_WORK_GROUP_SIZE, 0, NULL, &size);
     clGetKernelWorkGroupInfo(kernel[index], devices[0], CL_KERNEL_WORK_GROUP_SIZE, size, &kernelGroupSize, 0);
@@ -154,7 +155,7 @@ void    CL::createKernel(std::string name, int nbParticule)
     calculateWorkSize();
     index++;
     if (err != CL_SUCCESS)
-        throw std::runtime_error ("Failed to create kernel");
+        throw std::runtime_error ("Failed to create kernel : "  + std::to_string(err));
 }
 
 cl_kernel    CL::getKernel(int i)
