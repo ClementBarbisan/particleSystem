@@ -29,7 +29,7 @@ void    Renderer::sphereShape()
 void    Renderer::gravityBehaviour()
 {
     gravity = true;
-    openclComputation();
+    clObject->compute(3);
 }
 
 void    Renderer::changeShape()
@@ -92,10 +92,16 @@ void    Renderer::addShader(GLenum typeShader, std::string shader, GLuint *sh)
 
 void    Renderer::openclComputation()
 {
-    float tmp = static_cast<float>(currentMouseX) / width;
-    clSetKernelArg(clObject->getKernel(2), 1, sizeof(float),  &tmp);
-    tmp = static_cast<float>(currentMouseY) / height;
-    clSetKernelArg(clObject->getKernel(2), 2, sizeof(float),  &tmp);
+    cl_float4 tmp = {
+        {
+            0.5f - static_cast<float>(currentMouseX) / static_cast<float>(width),
+            -0.5f + static_cast<float>(currentMouseY) / static_cast<float>(height),
+            -1.0f,
+            0.0f
+        }
+    };
+    clSetKernelArg(clObject->getKernel(2), 1, sizeof(cl_float4),  &tmp);
+    clSetKernelArg(clObject->getKernel(2), 2, sizeof(float),  &mass);
     clObject->compute(2);
 }
 
@@ -146,6 +152,7 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     height = currentHeight;
     gravity = false;
     lock = false;
+    mass = 0.05;
     mat_pers = new float[16];
     mat_pers[0] = 1.0f / (((float)width / (float)height) * \
                           tan(180.0f / 2.0f));
@@ -153,17 +160,17 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     mat_pers[2] = 0.0f;
     mat_pers[3] = 0.0f;
     mat_pers[4] = 0.0f;
-    mat_pers[5] = 1.0f / tan(180.0f / 2.0f) + 1.0f;
+    mat_pers[5] = 1.0f / tan(180.0f / 2.0f);
     mat_pers[6] = 0.0f;
     mat_pers[7] = 0.0f;
     mat_pers[8] = 0.0f;
     mat_pers[9] = 0.0f;
-    mat_pers[10] = (0.2f - 100.0f) / (-0.2f - 100.0f);
-    mat_pers[11] = (2.0f * -0.2f * 100.0f) / (-0.2f - 100.0f);
+    mat_pers[10] = (0.025f - 150.0f) / (-0.025f - 150.0f);
+    mat_pers[11] = (2.0f * -0.025f * 150.0f) / (-0.025f - 150.0f);
     mat_pers[12] = 0.0f;
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;
-    mat_pers[15] = 0.7f;
+    mat_pers[15] = 0.3f;
     mapShapes = new funcShape[3];
     mapShapes[0] = &Renderer::sphereShape;
     mapShapes[1] = &Renderer::cubeShape;
@@ -179,6 +186,7 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     clObject->createKernel("cube", nbParticles);
     clObject->createKernel("sphere", nbParticles);
     clObject->createKernel("gravity", nbParticles);
+    clObject->createKernel("init_gravity", nbParticles);
     sphereShape();
     
 }

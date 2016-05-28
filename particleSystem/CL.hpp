@@ -35,7 +35,6 @@ class CL
         void                getDeviceInfo();
         size_t              workGroupSize;
         cl_uint             workItemDimensions;
-        size_t              *workItemsSize;
         cl_uint             computeUnits;
         size_t              kernelGroupSize;
         size_t              *globalWorkSize;
@@ -53,6 +52,7 @@ class CL
         void                shareBuffer(GLuint vboId);
         void                createKernel(std::string name, int nbParticule);
         cl_kernel           getKernel(int i);
+        cl_context          getContext();
         int                 num;
     
 };

@@ -98,8 +98,11 @@ void    CL::createProgram(std::string filename)
     program = clCreateProgramWithSource(context, 1, &file, NULL, &err);
     if (err != CL_SUCCESS)
         throw std::runtime_error ("Failed to create program from source.");
-    if ((err = clBuildProgram(program, nbDevice, devices, NULL, NULL, NULL)) != CL_SUCCESS)
+    if ((err = clBuildProgram(program, 1, &devices[0], NULL, NULL, NULL)) != CL_SUCCESS)
+    {
+        std::cout << err << std::endl;
         throw std::runtime_error ("Failed to build program");
+    }
 }
 
 void    CL::shareBuffer(GLuint vboId)
@@ -125,7 +128,9 @@ void    CL::calculateWorkSize()
     size_t localMultiple = findMultiple(tmp, 32);
     localWorkSize[0] = localMultiple;
     localWorkSize[1] = localMultiple;
-    size_t currentMultiple = findMultiple(multiple, 64);
+    size_t workItems[workItemDimensions];
+    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(workItems), &workItems, 0);
+    size_t currentMultiple = findMultiple(multiple, workItems[workItemDimensions - 1]);
     while (localMultiple * localMultiple * currentMultiple > workGroupSize && currentMultiple > 1)
         currentMultiple = findMultiple(multiple, currentMultiple - 1);
     localWorkSize[2] = currentMultiple;
@@ -157,6 +162,11 @@ cl_kernel    CL::getKernel(int i)
     return (kernel[i]);
 }
 
+cl_context  CL::getContext()
+{
+    return (context);
+}
+
 void    CL::getDeviceInfo()
 {
     size_t size;
@@ -169,18 +179,11 @@ void    CL::getDeviceInfo()
     clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, 0, NULL, &size);
     clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, size, &workItemDimensions, 0);
     std::cout << "workItemsDimensions = " << workItemDimensions << std::endl;
-    size_t workItems[workItemDimensions];
-    clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(workItems), &workItems, 0);
-    std::cout << "workItemsSize = { " << workItems[0];
-    for (size_t i = 1; i < workItemDimensions; i++)
-        std::cout << ", " << workItems[i];
-    std::cout << "}" << std::endl;
-    workItemsSize = workItems;
 }
 
 CL::CL()
 {
-    kernel = new cl_kernel[3];
+    kernel = new cl_kernel[4];
     index = 0;
     createPlatform();
     getDevices();

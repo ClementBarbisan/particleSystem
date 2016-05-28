@@ -1,17 +1,32 @@
 __kernel void gravity(__global float4 *data_buffer,
-								float mouseX,
-								float mouseY)
+								float4 grav,
+								float mass)
 {
 	int gid1 = get_global_id(0) * 3;
 	int gid2 = get_global_id(1) * 3;
 	int gid3 = get_global_id(2) * 3;
 	int size1 = get_global_size(0);
 	int size2 = get_global_size(1);
-	float mass		= data_buffer[(gid1 + (gid3 * size1 * size2) + gid2 * size1) + 2].x;
     __global float4* velocity = &data_buffer[(gid1 + (gid3 * size1 * size2) + gid2 * size1) + 1];
     __global float4* pos = &data_buffer[(gid1 + gid3 * size1 * size2 + gid2 * size1)];
-	*pos -= (float4)(0.01f, 0.01f, 0.01f, 0.0f);
+	float4 vec = grav - *pos;
+	float4 force = fast_normalize(vec);
+	*velocity +=  force / mass * 0.01f;
+	*pos += *velocity * 0.01f;
 }
+
+__kernel void init_gravity(__global float4 *data_buffer)
+{
+	int gid1 = get_global_id(0) * 3;
+	int gid2 = get_global_id(1) * 3;
+	int gid3 = get_global_id(2) * 3;
+	int size1 = get_global_size(0);
+	int size2 = get_global_size(1);
+	int size3 = get_global_size(2);
+    __global float4* velocity = &data_buffer[(gid1 + (gid3 * size1 * size2) + gid2 * size1) + 1];
+	*velocity = (float4)(0.1f, 0.1f, 0.1f, 0.0f);
+}
+
 
 __kernel void sphere(__global float4 *data_buffer,
 							size_t	total_size)

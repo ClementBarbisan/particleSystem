@@ -40,7 +40,7 @@ void    init(int nb)
 
 void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (window && action == GLFW_PRESS)
+    if (window && action == GLFW_PRESS && scancode != 0 && mods != GLFW_MOD_ALT)
     {
         if (key == 256)
              toExit = true;
@@ -51,7 +51,7 @@ void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void    onClickButton(GLFWwindow *window, int button, int action, int mods)
 {
-    if (button == 0)
+    if (window && button == 0 && mods != GLFW_MOD_ALT)
     {
         if (action == GLFW_PRESS)
             onClick = true;
@@ -62,8 +62,11 @@ void    onClickButton(GLFWwindow *window, int button, int action, int mods)
 
 void    onMouseMove(GLFWwindow *window, double x, double y)
 {
-    mouseX = x;
-    mouseY = y;
+    if (window)
+    {
+        mouseX = x;
+        mouseY = y;
+    }
 }
 
 void    render()
@@ -73,8 +76,22 @@ void    render()
 
 void    mainLoop(GLFWwindow *window)
 {
+    double  currentTime;
+    double  lastTime = 0.0;
+    int     frames = 0;
     while (!toExit)
     {
+        currentTime = glfwGetTime();
+        frames++;
+        if (currentTime - lastTime >= 1.0)
+        {
+            double fps = (1000.0 / double(frames));
+            
+            const char *title = (std::to_string(static_cast<int>(1000 / fps)) + "FPS").c_str();
+            glfwSetWindowTitle(window, title);
+            frames = 0;
+            lastTime += 1.0;
+        }
         render();
         if ((err = glGetError()) != GL_NO_ERROR)
             throw std::runtime_error(searchError(err));

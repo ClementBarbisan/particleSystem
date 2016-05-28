@@ -31,6 +31,7 @@ class Renderer
         int         nbParticles;
         int         width;
         int         height;
+        float       mass;
         void        createParticles(int nb);
         void        createProgram();
         void        addShader(GLenum typeShader, std::string shader, GLuint *sh);

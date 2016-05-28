@@ -14,8 +14,8 @@
 #include <OpenGL/gl.h>
 #include "Renderer.hpp"
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 1024
+#define HEIGHT 768
 
 bool toExit;
 Renderer *renderer;
