@@ -109,8 +109,8 @@ void    Renderer::openclComputation()
 {
     cl_float4 tmp = {
         {
-            0.5f - static_cast<float>(currentMouseX) / static_cast<float>(width),
-            -0.5f + static_cast<float>(currentMouseY) / static_cast<float>(height),
+            -0.5f + static_cast<float>(currentMouseX) / static_cast<float>(width),
+            0.5f - static_cast<float>(currentMouseY) / static_cast<float>(height),
             -1.0f,
             0.0f
         }
@@ -135,7 +135,15 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
     glUseProgram(pId[programIndex]);
     glBindVertexArray(vaoId);
     if (gravity)
+	{
         openclComputation();
+		glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, modelMatrix);
+	}
+	else
+	{
+		updateMatrix();
+		glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, matrixView);
+	}
     glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "projectionMatrix"), 1, GL_FALSE, matrix);
     glUniform2f(glGetUniformLocation(pId[programIndex], "mousePos"), static_cast<float>(mouseX) / width , static_cast<float>(mouseY) / height);
     glEnableVertexAttribArray(0);
@@ -212,29 +220,35 @@ void	Renderer::updateMatrix()
     matrixView[15] = 1.0f;
 }
 
+GLfloat	*Renderer::identityMatrix()
+{
+	GLfloat	*mat_rot;
+	
+	mat_rot = new GLfloat[16];
+	mat_rot[0] = 1.0f;
+	mat_rot[1] = 0.0f;
+	mat_rot[2] = 0.0f;
+	mat_rot[3] = 0.0f;
+	mat_rot[4] = 0.0f;
+	mat_rot[5] = 1.0f;
+	mat_rot[6] = 0.0f;
+	mat_rot[7] = 0.0f;
+	mat_rot[8] = 0.0f;
+	mat_rot[9] = 0.0f;
+	mat_rot[10] = 1.0f;
+	mat_rot[11] = 0.0f;
+	mat_rot[12] = 0.0f;
+	mat_rot[13] = 0.0f;
+	mat_rot[14] = 0.0f;
+	mat_rot[15] = 1.0f;
+	return (mat_rot);
+}
+
 
 void    Renderer::matrixViewInit()
 {
-    GLfloat	*mat_rot;
-    
-    mat_rot = new GLfloat[16];
-    mat_rot[0] = 1.0f;
-    mat_rot[1] = 0.0f;
-    mat_rot[2] = 0.0f;
-    mat_rot[3] = 0.0f;
-    mat_rot[4] = 0.0f;
-    mat_rot[5] = 1.0f;
-    mat_rot[6] = 0.0f;
-    mat_rot[7] = 0.0f;
-    mat_rot[8] = 0.0f;
-    mat_rot[9] = 0.0f;
-    mat_rot[10] = 1.0f;
-    mat_rot[11] = 0.0f;
-    mat_rot[12] = 0.0f;
-    mat_rot[13] = 0.0f;
-    mat_rot[14] = 0.0f;
-    mat_rot[15] = 1.0f;
-    matrixView = mat_rot;
+	
+    matrixView = identityMatrix();
 }
 
 void    Renderer::initPosition()
@@ -253,22 +267,22 @@ void    Renderer::matrixPers()
     float	*mat_pers;
     mat_pers = new float[16];
     mat_pers[0] = 1.0f / (((float)width / (float)height) * \
-                          tan(180.0f / 2.0f));
+                          tan(140.0f / 2.0f));
     mat_pers[1] = 0.0f;
     mat_pers[2] = 0.0f;
     mat_pers[3] = 0.0f;
     mat_pers[4] = 0.0f;
-    mat_pers[5] = 1.0f / tan(180.0f / 2.0f);
+    mat_pers[5] = 1.0f / tan(140.0f / 2.0f);
     mat_pers[6] = 0.0f;
     mat_pers[7] = 0.0f;
     mat_pers[8] = 0.0f;
     mat_pers[9] = 0.0f;
-    mat_pers[10] = (0.025f - 150.0f) / (-0.025f - 150.0f);
-    mat_pers[11] = (2.0f * -0.025f * 150.0f) / (-0.025f - 150.0f);
+    mat_pers[10] = (0.1f - 100.0f) / (-0.1f - 100.0f);
+    mat_pers[11] = (2.0f * -0.1f * 100.0f) / (-0.1f - 100.0f);
     mat_pers[12] = 0.0f;
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;
-    mat_pers[15] = 0.3f;
+    mat_pers[15] = 1.0f;
     matrix = mat_pers;
 }
 
@@ -291,6 +305,7 @@ void    Renderer::init(int nb, int currentWidth, int currentHeight)
     matrixViewInit();
     matrixPers();
     nbParticles = nb;
+	modelMatrix = identityMatrix();
     createParticles(nb);
 	pId = new GLuint[2];
 	vshId = new GLuint[2];

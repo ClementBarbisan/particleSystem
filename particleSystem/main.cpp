@@ -10,6 +10,7 @@
 #include "main.h"
 #include "utils.hpp"
 #include <GLFW/glfw3.h>
+#include <cmath>
 
 void    initglfw()
 {
@@ -50,6 +51,22 @@ void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods
             renderer->changeShape();
 		else if (key == 80)
 			renderer->changeProgram();
+		else if (key == GLFW_KEY_RIGHT)
+			renderer->getPosition().rotY += 0.1;
+		else if (key == GLFW_KEY_LEFT)
+			renderer->getPosition().rotY -= 0.1;
+		else if (key == GLFW_KEY_UP)
+		{
+			t_pos & pos = renderer->getPosition();
+			pos.x += 0.1 * sin(pos.rotY);
+			pos.z += 0.1 * cos(pos.rotY);
+		}
+		else if (key == GLFW_KEY_DOWN)
+		{
+			t_pos & pos = renderer->getPosition();
+			pos.x -= 0.1 * sin(pos.rotY);
+			pos.z -= 0.1 * cos(pos.rotY);
+		}
     }
 }
 

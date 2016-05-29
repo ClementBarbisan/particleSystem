@@ -51,9 +51,11 @@ class Renderer
         void        matrixPers();
         t_trigo     createTrigo();
         void        updateMatrix();
+		GLfloat		*identityMatrix();
         void        initPosition();
         float       *matrix;
         float       *matrixView;
+		float		*modelMatrix;
         bool        lock;
         float       delta;
         bool        gravity;
