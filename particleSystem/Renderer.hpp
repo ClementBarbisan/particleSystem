@@ -45,7 +45,7 @@ class Renderer
         void        init(int nb, int width, int height);
         void        sphereShape();
         void        cubeShape();
-        void        openclComputation();
+        void        openclComputation(float scale);
         void        gravityBehaviour();
         void        matrixViewInit();
         void        matrixPers();

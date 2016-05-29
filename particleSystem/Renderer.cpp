@@ -34,7 +34,8 @@ void    Renderer::gravityBehaviour()
 
 void	Renderer::changeProgram()
 {
-	programIndex = (programIndex + 1) % 2;
+	if (gravity || programIndex)
+		programIndex = (programIndex + 1) % 2;
 }
 
 t_pos   &   Renderer::getPosition()
@@ -48,6 +49,7 @@ void    Renderer::changeShape()
     funcShape func = mapShapes[currentShape];
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
     gravity = false;
+	programIndex = 0;
     (this->*func)();
     glFinish();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -68,8 +70,6 @@ void    Renderer::createParticles(int nb)
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
     glBufferData(GL_ARRAY_BUFFER, (nb) * sizeof(Particle), NULL, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, 0);
-//    glVertexAttribPointer(1, velocityFloatCount, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, (void *)(sizeof(GL_FLOAT) * 3));
-//    glVertexAttribPointer(2, massFloatCount, GL_FLOAT, GL_FALSE, vertexFloatSizeInBytes, (void *)(sizeof(GL_FLOAT) * 6));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     if ((err = glGetError()) != GL_NO_ERROR)
@@ -105,12 +105,12 @@ void    Renderer::setDelta(float dt)
     delta = dt;
 }
 
-void    Renderer::openclComputation()
+void    Renderer::openclComputation(float scale)
 {
     cl_float4 tmp = {
         {
-            -0.5f + static_cast<float>(currentMouseX) / static_cast<float>(width),
-            0.5f - static_cast<float>(currentMouseY) / static_cast<float>(height),
+            (-0.5f + static_cast<float>(currentMouseX) / static_cast<float>(width)) * scale,
+            (0.5f - static_cast<float>(currentMouseY) / static_cast<float>(height)) * scale,
             -1.0f,
             0.0f
         }
@@ -123,6 +123,7 @@ void    Renderer::openclComputation()
 
 void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
 {
+	float scale = 1.0f;
     if (mouseDown)
         lock = !lock;
     if (!lock)
@@ -136,7 +137,18 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
     glBindVertexArray(vaoId);
     if (gravity)
 	{
-        openclComputation();
+		
+		if (programIndex)
+		{
+			scale = 8.0f;
+			modelMatrix[11] = -scale;
+			openclComputation(scale * 2);
+		}
+		else
+		{
+			modelMatrix[11] = 0.0f;
+			openclComputation(scale);
+		}
 		glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, modelMatrix);
 	}
 	else
@@ -145,7 +157,7 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
 		glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, matrixView);
 	}
     glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "projectionMatrix"), 1, GL_FALSE, matrix);
-    glUniform2f(glGetUniformLocation(pId[programIndex], "mousePos"), static_cast<float>(mouseX) / width , static_cast<float>(mouseY) / height);
+    glUniform2f(glGetUniformLocation(pId[programIndex], "mousePos"), (static_cast<float>(mouseX) / width) , (static_cast<float>(mouseY) / height));
     glEnableVertexAttribArray(0);
     glDrawArrays(GL_POINTS, 0, nbParticles);
     glDisableVertexAttribArray(0);
@@ -277,8 +289,8 @@ void    Renderer::matrixPers()
     mat_pers[7] = 0.0f;
     mat_pers[8] = 0.0f;
     mat_pers[9] = 0.0f;
-    mat_pers[10] = (0.1f - 100.0f) / (-0.1f - 100.0f);
-    mat_pers[11] = (2.0f * -0.1f * 100.0f) / (-0.1f - 100.0f);
+    mat_pers[10] = (0.2f - 100.0f) / (-0.2f - 100.0f);
+    mat_pers[11] = (2.0f * -0.2f * 100.0f) / (-0.2f - 100.0f);
     mat_pers[12] = 0.0f;
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;

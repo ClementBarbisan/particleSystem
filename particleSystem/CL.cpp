@@ -59,37 +59,7 @@ void    CL::compute(int indexK)
     clEnqueueReleaseGLObjects(queue, 1, &clBuffer, 0, NULL, NULL);
     clFinish(queue);
     if (err != CL_SUCCESS)
-    {
-        std::cout << err << std::endl;
-        if (err == CL_OUT_OF_RESOURCES)
-            throw std::runtime_error ("Failed to execute kernel : OUT_OF_RESOUCES");
-        else if (err == CL_INVALID_WORK_GROUP_SIZE)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_WORK_GROUP_SIZE");
-        else if (err == CL_OUT_OF_HOST_MEMORY)
-            throw std::runtime_error ("Failed to execute kernel : CL_OUT_OF_HOST_MEMORY");
-        else if (err == CL_MEM_OBJECT_ALLOCATION_FAILURE)
-            throw std::runtime_error ("Failed to execute kernel : CL_MEM_OBJECT_ALLOCATION_FAILURE");
-        else if (err == CL_INVALID_PROGRAM_EXECUTABLE)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_PROGRAM_EXECUTABLEE");
-        else if (err == CL_INVALID_COMMAND_QUEUE)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_COMMAND_QUEUE");
-        else if (err == CL_INVALID_KERNEL)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_KERNEL");
-        else if (err == CL_INVALID_CONTEXT)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_CONTEXT");
-        else if (err == CL_INVALID_WORK_ITEM_SIZE)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_WORK_ITEM_SIZE");
-        else if (err == CL_INVALID_KERNEL_ARGS)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_KERNEL_ARGS");
-        else if (err == CL_INVALID_GLOBAL_OFFSET)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_GLOBAL_OFFSET");
-        else if (err == CL_INVALID_EVENT_WAIT_LIST)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_EVENT_WAIT_LIST");
-        else if (err == CL_INVALID_WORK_DIMENSION)
-            throw std::runtime_error ("Failed to execute kernel : CL_INVALID_WORK_DIMENSION");
-        else
-            throw std::runtime_error ("Failed to execute kernel : unknown");
-    }
+		throw std::runtime_error ("Failed to execute kernel : " + std::to_string(err));
 }
 
 void    CL::createProgram(std::string filename)

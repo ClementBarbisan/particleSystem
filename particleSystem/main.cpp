@@ -52,9 +52,9 @@ void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == 80)
 			renderer->changeProgram();
 		else if (key == GLFW_KEY_RIGHT)
-			renderer->getPosition().rotY += 0.1;
-		else if (key == GLFW_KEY_LEFT)
 			renderer->getPosition().rotY -= 0.1;
+		else if (key == GLFW_KEY_LEFT)
+			renderer->getPosition().rotY += 0.1;
 		else if (key == GLFW_KEY_UP)
 		{
 			t_pos & pos = renderer->getPosition();
