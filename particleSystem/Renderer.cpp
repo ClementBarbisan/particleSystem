@@ -279,12 +279,12 @@ void    Renderer::matrixPers()
     float	*mat_pers;
     mat_pers = new float[16];
     mat_pers[0] = 1.0f / (((float)width / (float)height) * \
-                          tan(140.0f / 2.0f));
+                          tan(90.0f / 2.0f));
     mat_pers[1] = 0.0f;
     mat_pers[2] = 0.0f;
     mat_pers[3] = 0.0f;
     mat_pers[4] = 0.0f;
-    mat_pers[5] = 1.0f / tan(140.0f / 2.0f);
+    mat_pers[5] = 1.0f / tan(90.0f / 2.0f);
     mat_pers[6] = 0.0f;
     mat_pers[7] = 0.0f;
     mat_pers[8] = 0.0f;
