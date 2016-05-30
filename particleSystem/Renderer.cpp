@@ -142,16 +142,16 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
     glBindVertexArray(vaoId);
     if (gravity)
 	{
-		
 		if (programIndex)
 		{
-			scale = 1.0f;
 			modelMatrix[11] = -scale;
+            matrix[15] = scale;
 			openclComputation(scale * 2);
 		}
 		else
 		{
 			modelMatrix[11] = 0.0f;
+            matrix[15] = 1.5f;
 			openclComputation(scale);
 		}
 		glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, modelMatrix);
@@ -262,7 +262,6 @@ GLfloat	*Renderer::identityMatrix()
 
 void    Renderer::matrixViewInit()
 {
-	
     matrixView = identityMatrix();
 }
 
@@ -292,12 +291,12 @@ void    Renderer::matrixPers()
     mat_pers[7] = 0.0f;
     mat_pers[8] = 0.0f;
     mat_pers[9] = 0.0f;
-    mat_pers[10] = (0.3f - 100.0f) / (-0.3f - 100.0f);
-    mat_pers[11] = (2.0f * -0.3f * 100.0f) / (-0.3f - 100.0f);
+    mat_pers[10] = (0.3f - 200.0f) / (-0.3f - 200.0f);
+    mat_pers[11] = (2.0f * -0.3f * 200.0f) / (-0.3f - 200.0f);
     mat_pers[12] = 0.0f;
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;
-    mat_pers[15] = 1.0f;
+    mat_pers[15] = 1.5f;
     matrix = mat_pers;
 }
 

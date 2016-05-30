@@ -49,9 +49,12 @@ void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods
              toExit = true;
         else if (key == 32)
             renderer->changeShape();
-		else if (key == 80)
-			renderer->changeProgram();
-		else if (key == GLFW_KEY_RIGHT)
+        else if (key == 80)
+            renderer->changeProgram();
+    }
+    else if (action == GLFW_PRESS || action == GLFW_REPEAT)
+    {
+		if (key == GLFW_KEY_RIGHT)
 			renderer->getPosition().rotY -= 0.1;
 		else if (key == GLFW_KEY_LEFT)
 			renderer->getPosition().rotY += 0.1;
