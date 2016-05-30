@@ -23,9 +23,9 @@ void emit_vert(int vert)
 void main()
 {
 	vec4 P = vec4(vertex[0].fragPos, 0.0f);
-	vec4 I = vec4(0.005f,0.0f,0.0f,0.0f);
-	vec4 J = vec4(0.0f,0.005f,0.0f,0.0f);
-	vec4 K = vec4(0.0f,0.0f,0.005f,0.0f);
+	vec4 I = vec4(0.002f,0.0f,0.0f,0.0f);
+	vec4 J = vec4(0.0f,0.002f,0.0f,0.0f);
+	vec4 K = vec4(0.0f,0.0f,0.002f,0.0f);
 	pos = (projectionMatrix * viewMatrix * P).xyz;
 	
 	objTetra[0] = P+J;

@@ -140,7 +140,7 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
 		
 		if (programIndex)
 		{
-			scale = 8.0f;
+			scale = 1.0f;
 			modelMatrix[11] = -scale;
 			openclComputation(scale * 2);
 		}
@@ -157,7 +157,7 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
 		glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, matrixView);
 	}
     glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "projectionMatrix"), 1, GL_FALSE, matrix);
-    glUniform2f(glGetUniformLocation(pId[programIndex], "mousePos"), (static_cast<float>(mouseX) / width) , (static_cast<float>(mouseY) / height));
+    glUniform2f(glGetUniformLocation(pId[programIndex], "mousePos"), -0.5 + (static_cast<float>(mouseX) / width) , 0.5 - (static_cast<float>(mouseY) / height));
     glEnableVertexAttribArray(0);
     glDrawArrays(GL_POINTS, 0, nbParticles);
     glDisableVertexAttribArray(0);
@@ -289,8 +289,8 @@ void    Renderer::matrixPers()
     mat_pers[7] = 0.0f;
     mat_pers[8] = 0.0f;
     mat_pers[9] = 0.0f;
-    mat_pers[10] = (0.2f - 100.0f) / (-0.2f - 100.0f);
-    mat_pers[11] = (2.0f * -0.2f * 100.0f) / (-0.2f - 100.0f);
+    mat_pers[10] = (0.3f - 100.0f) / (-0.3f - 100.0f);
+    mat_pers[11] = (2.0f * -0.3f * 100.0f) / (-0.3f - 100.0f);
     mat_pers[12] = 0.0f;
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;
