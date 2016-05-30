@@ -67,6 +67,10 @@ void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods
 			pos.x -= 0.1 * sin(pos.rotY);
 			pos.z -= 0.1 * cos(pos.rotY);
 		}
+		else if (key == 77)
+			renderer->getMass() += 0.005;
+		else if (key == 76 && renderer->getMass() > 0.01)
+			renderer->getMass() -= 0.005;
     }
 }
 

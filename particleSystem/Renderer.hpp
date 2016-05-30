@@ -31,6 +31,7 @@ class Renderer
 		void		changeProgram();
         void        setDelta(float dt);
         t_pos   &   getPosition();
+		float	&	getMass();
         ~Renderer();
     private:
         int         nbParticles;

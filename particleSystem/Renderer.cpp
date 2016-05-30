@@ -121,6 +121,11 @@ void    Renderer::openclComputation(float scale)
     clObject->compute(2);
 }
 
+float  & Renderer::getMass()
+{
+	return (mass);
+}
+
 void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
 {
 	float scale = 1.0f;
@@ -181,8 +186,6 @@ void    Renderer::createProgram(int shader)
     glAttachShader(pId[shader], vshId[shader]);
     glAttachShader(pId[shader], fshId);
     glBindAttribLocation(pId[shader], 0, "vertexPosition");
-    glBindAttribLocation(pId[shader], 1, "velocity");
-    glBindAttribLocation(pId[shader], 2, "mass");
     glLinkProgram(pId[shader]);
     glValidateProgram(pId[shader]);
     if ((err = glGetError()) != GL_NO_ERROR)
