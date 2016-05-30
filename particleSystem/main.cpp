@@ -151,6 +151,8 @@ int main(int argc, const char * argv[])
             std::cout << "Error on initialization. " << e.what() << std::endl;
         }
     }
+    else if (argc < 2)
+        std::cout << "Not enough arguments : Usage " << argv[0] << " <nbParticles>" << std::endl;
     else
         std::cout << "Can't create window." << std::endl;
     return (0);

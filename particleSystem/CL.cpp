@@ -150,6 +150,8 @@ void    CL::getDeviceInfo()
     clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, 0, NULL, &size);
     clGetDeviceInfo(devices[0], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, size, &workItemDimensions, 0);
     std::cout << "workItemsDimensions = " << workItemDimensions << std::endl;
+    if (workItemDimensions < 3)
+        throw std::runtime_error ("Not enough work dimensions on this device");
 }
 
 CL::CL()
