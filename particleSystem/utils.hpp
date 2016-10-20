@@ -20,5 +20,6 @@ std::string     fileToString(std::string filename);
 std::string     getCurrentDir();
 size_t          findMultiple(size_t value, size_t div);
 int             stringToInt(const char *str);
+float           dot(const float *vec1,const float *vec2);
 
 #endif /* utils_hpp */

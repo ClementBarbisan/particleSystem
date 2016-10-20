@@ -4,9 +4,9 @@
 
 space - switch particles mode (sphere, cube, gravity center)
 
-On cube or sphere mode :
+P - Switch geometry shader use
 
-Left-right arrows - Y-Rotation
+Mouse - Rotations
 
 Up-down arrows - Zoom in, zoom out
 
@@ -16,4 +16,3 @@ Mouse position - change gravity center
 
 Left-click - lock or unlock gravity center
 
-P - Switch geometry shader use

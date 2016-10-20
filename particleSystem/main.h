@@ -22,6 +22,8 @@ bool toExit;
 Renderer *renderer;
 int mouseX;
 int mouseY;
+int oldMouseX;
+int oldMouseY;
 bool onClick;
 GLuint err;
 

@@ -34,8 +34,7 @@ void    Renderer::gravityBehaviour()
 
 void	Renderer::changeProgram()
 {
-	if (gravity || programIndex)
-		programIndex = (programIndex + 1) % 2;
+    programIndex = (programIndex + 1) % 2;
 }
 
 t_pos   &   Renderer::getPosition()
@@ -144,23 +143,17 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
 	{
 		if (programIndex)
 		{
-			modelMatrix[11] = -scale;
             matrix[15] = scale;
 			openclComputation(scale * 2);
 		}
 		else
 		{
-			modelMatrix[11] = 0.0f;
             matrix[15] = 1.5f;
 			openclComputation(scale);
 		}
-		glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, modelMatrix);
 	}
-	else
-	{
-		updateMatrix();
-		glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, matrixView);
-	}
+	updateMatrix();
+    glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, matrixView);
     glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "projectionMatrix"), 1, GL_FALSE, matrix);
     glUniform2f(glGetUniformLocation(pId[programIndex], "mousePos"), -0.5 + (static_cast<float>(mouseX) / width) , 0.5 - (static_cast<float>(mouseY) / height));
     glEnableVertexAttribArray(0);
@@ -209,26 +202,27 @@ t_trigo	Renderer::createTrigo()
 
 void	Renderer::updateMatrix()
 {
-    t_trigo	trigo;
     
-    trigo = createTrigo();
-    matrixView
-    [0] = trigo.cos_y * trigo.cos_z;
-    matrixView[1] = -trigo.cos_y * trigo.sin_z;
-    matrixView[2] = trigo.sin_y;
-    matrixView[3] = position->x;
-    matrixView[4] = trigo.sin_x_sin_y * trigo.cos_z + trigo.cos_x * \
-    trigo.sin_z;
-    matrixView[5] = -trigo.sin_x_sin_y * trigo.sin_z + trigo.cos_x * \
-    trigo.cos_z;
-    matrixView[6] = -trigo.sin_x * trigo.cos_y;
-    matrixView[7] = position->y;
-    matrixView[8] = -trigo.cos_x_sin_y * trigo.cos_z + trigo.sin_x * \
-    trigo.sin_z;
-    matrixView[9] = trigo.cos_x_sin_y * trigo.sin_z + trigo.sin_x * \
-    trigo.cos_z;
-    matrixView[10] = trigo.cos_x * trigo.cos_y;
-    matrixView[11] = position->z;
+    float cosPitch = cos(position->rotX);
+    float sinPitch = sin(position->rotX);
+    float cosYaw = cos(position->rotY);
+    float sinYaw = sin(position->rotY);
+    float eye[3] = {position->x, position->y, position->z};
+    float xaxis[3] = {cosYaw, 0, -sinYaw};
+    float yaxis[3] = {sinYaw * sinPitch, cosPitch, cosYaw * sinPitch};
+    float zaxis[3] = {sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw};
+    matrixView[0] = xaxis[0];
+    matrixView[1] = xaxis[1];
+    matrixView[2] = xaxis[2];
+    matrixView[3] = -dot(xaxis, eye);
+    matrixView[4] = yaxis[0];
+    matrixView[5] = yaxis[1];
+    matrixView[6] = yaxis[2];
+    matrixView[7] = -dot(yaxis, eye);
+    matrixView[8] = zaxis[0];
+    matrixView[9] = zaxis[1];
+    matrixView[10] = zaxis[2];
+    matrixView[11] = -dot(zaxis, eye);
     matrixView[12] = 0.0f;
     matrixView[13] = 0.0f;
     matrixView[14] = 0.0f;

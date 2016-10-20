@@ -61,13 +61,15 @@ void	callbackKey(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_UP)
 		{
 			t_pos & pos = renderer->getPosition();
-			pos.x += 0.1 * sin(pos.rotY);
+			pos.x += 0.1 * sin(pos.rotY) * cos (pos.rotX);
+            pos.y += 0.1 * sin(pos.rotY) * sin(pos.rotX);
 			pos.z += 0.1 * cos(pos.rotY);
 		}
 		else if (key == GLFW_KEY_DOWN)
 		{
 			t_pos & pos = renderer->getPosition();
-			pos.x -= 0.1 * sin(pos.rotY);
+            pos.x -= 0.1 * sin(pos.rotY) * cos (pos.rotX);
+            pos.y -= 0.1 * sin(pos.rotY) * sin (pos.rotX);
 			pos.z -= 0.1 * cos(pos.rotY);
 		}
 		else if (key == 77)
@@ -92,8 +94,18 @@ void    onMouseMove(GLFWwindow *window, double x, double y)
 {
     if (window)
     {
+        oldMouseX = mouseX;
+        oldMouseY = mouseY;
         mouseX = x;
         mouseY = y;
+        if (oldMouseX > mouseX)
+            renderer->getPosition().rotY -= 0.02;
+        else if (oldMouseX < mouseX)
+            renderer->getPosition().rotY += 0.02;
+        if (oldMouseY > mouseY)
+            renderer->getPosition().rotX -= 0.02;
+        else if (oldMouseY < mouseY)
+            renderer->getPosition().rotX += 0.02;
     }
 }
 
@@ -147,6 +159,7 @@ int main(int argc, const char * argv[])
             glfwSetKeyCallback(window, callbackKey);
             glfwSetCursorPosCallback(window, onMouseMove);
             glfwSetMouseButtonCallback(window, onClickButton);
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             mainLoop(window);
         }
         catch (const std::exception &e)
