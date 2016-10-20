@@ -53,6 +53,7 @@ class Renderer
         t_trigo     createTrigo();
         void        updateMatrix();
 		GLfloat		*identityMatrix();
+        void        updateModelMatrix();
         void        initPosition();
         float       *matrix;
         float       *matrixView;

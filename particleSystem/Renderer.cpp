@@ -153,6 +153,8 @@ void    Renderer::render(int mouseX, int mouseY, bool mouseDown)
 		}
 	}
 	updateMatrix();
+    updateModelMatrix();
+    glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "modelMatrix"), 1, GL_FALSE, modelMatrix);
     glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "viewMatrix"), 1, GL_FALSE, matrixView);
     glUniformMatrix4fv(glGetUniformLocation(pId[programIndex], "projectionMatrix"), 1, GL_FALSE, matrix);
     glUniform2f(glGetUniformLocation(pId[programIndex], "mousePos"), -0.5 + (static_cast<float>(mouseX) / width) , 0.5 - (static_cast<float>(mouseY) / height));
@@ -198,6 +200,13 @@ t_trigo	Renderer::createTrigo()
     trigo.cos_x_sin_y = trigo.cos_x * trigo.sin_y;
     trigo.sin_x_sin_y = trigo.sin_x * trigo.sin_y;
     return (trigo);
+}
+
+void    Renderer::updateModelMatrix()
+{
+    modelMatrix[3] = position->x;
+    modelMatrix[7] = position->y;
+    modelMatrix[11] = position->z;
 }
 
 void	Renderer::updateMatrix()

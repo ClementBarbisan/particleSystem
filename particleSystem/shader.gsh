@@ -8,7 +8,7 @@ in Vertex
 } vertex[];
 
 out vec3 pos;
-
+uniform mat4 modelMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 
@@ -16,7 +16,7 @@ vec4 objTetra[5];
 
 void emit_vert(int vert)
 {
-	gl_Position = projectionMatrix * viewMatrix * objTetra[vert];
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * objTetra[vert];
 	EmitVertex();
 }
 
