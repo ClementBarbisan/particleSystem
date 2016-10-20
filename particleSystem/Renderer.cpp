@@ -294,12 +294,12 @@ void    Renderer::matrixPers()
     mat_pers[7] = 0.0f;
     mat_pers[8] = 0.0f;
     mat_pers[9] = 0.0f;
-    mat_pers[10] = (0.3f - 200.0f) / (-0.3f - 200.0f);
-    mat_pers[11] = (2.0f * -0.3f * 200.0f) / (-0.3f - 200.0f);
+    mat_pers[10] = (-0.1f - 200.0f) / (0.1f - 200.0f);
+    mat_pers[11] = (2.0f * 0.1f * 200.0f) / (0.1f - 200.0f);
     mat_pers[12] = 0.0f;
     mat_pers[13] = 0.0f;
     mat_pers[14] = 1.0f;
-    mat_pers[15] = 1.5f;
+    mat_pers[15] = 0.7f;
     matrix = mat_pers;
 }
 
